@@ -1,4 +1,9 @@
-use macroquad::prelude::*;
+/*
+    Hello, World
+    CanhDinhTien
+*/
+
+use macroquad::{audio::*, prelude::*};
 
 const GRAVITY: f32 = 0.5;
 const JUMP_STRENGTH: f32 = -8.5;
@@ -26,12 +31,25 @@ async fn main() {
     let background_texture2: Texture2D = load_texture("background-night.png").await.unwrap();
     let bird_texture = load_texture("bird.png").await.unwrap();
 
+    let fly_sound = load_sound("fly.wav").await.unwrap();
+    let crash_sound = load_sound("crash.wav").await.unwrap();
+    let score_sound = load_sound("score.wav").await.unwrap();
+    // let background_sound = load_sound("background.wav").await.unwrap();
+
+    // play_sound(
+    //     background_sound,
+    //     PlaySoundParams {
+    //         looped: true, 
+    //         volume: 0.5,  
+    //     },
+    // );
+
     loop {
         clear_background(SKYBLUE);
 
         match state {
             GameState::MainMenu => {
-                
+
                 draw_text("Flappy Bird", screen_width() / 2.0 - 100.0, screen_height() / 2.0 - 100.0, 50.0, WHITE);
                 if button("Start", screen_width() / 2.0 - 100.0, screen_height() / 2.0) {
 
@@ -67,6 +85,7 @@ async fn main() {
                 bird_y += bird_velocity;
 
                 if is_key_pressed(KeyCode::Space) || is_key_pressed(KeyCode::Up){
+                    play_sound_once(fly_sound);
                     bird_velocity = JUMP_STRENGTH;
                 }
 
@@ -74,13 +93,16 @@ async fn main() {
                     *x -= 2.0 * (score+6) as f32 / 6.0;
                 }
 
-                if pipes[0].0 < -PIPE_WIDTH {
+                if pipes[0].0 < 0.0 {
                     pipes.remove(0);
                     pipes.push((screen_width(), random_pipe_height()));
                     score += 1;
+                    play_sound_once(score_sound);
                 }
+                
 
                 if bird_y < 0.0 || bird_y > screen_height() || pipes.iter().any(|(pipe_x, pipe_y)| bird_collides_with_pipe(bird_y, *pipe_x, *pipe_y)) {
+                    play_sound_once(crash_sound);
                     state = GameState::GameOver;
                 }
 
@@ -120,7 +142,6 @@ async fn main() {
                 draw_text(&format!("High Score: {}", high_scores), 10.0, 40.0, 30.0, WHITE);
             }
             GameState::GameOver => {
-                
                 if score > high_scores{
                     high_scores = score;
                 }
@@ -128,7 +149,7 @@ async fn main() {
                 draw_text("Game Over!", screen_width() / 2.0 - 100.0, screen_height() / 2.0 - 100.0, 50.0, RED);
                 draw_text(&format!("Score: {}", score), screen_width() / 2.5 - 100.0, screen_height() / 2.0, 30.0, WHITE);
                 draw_text(&format!("High Score: {}", high_scores), screen_width() / 1.5 - 100.0, screen_height() / 2.0, 30.0, WHITE);
-                if button("Play again", screen_width() / 2.0 - 100.0, screen_height() / 2.0 + 50.0) || is_key_pressed(KeyCode::Enter){
+                if button("Play again", screen_width() / 2.0 - 100.0, screen_height() / 2.0 + 50.0) || is_key_pressed(KeyCode::Enter) || is_key_pressed(KeyCode::Space){
                     score = 0;
                     bird_y = screen_height() / 2.0;
                     bird_velocity = 0.0;
@@ -149,7 +170,7 @@ async fn main() {
 }
 
 fn random_pipe_height() -> f32 {
-    rand::gen_range(100.0, screen_height() - 200.0)
+    rand::gen_range(25.0, screen_height() - 200.0)
 }
 
 fn bird_collides_with_pipe(bird_y: f32, pipe_x: f32, pipe_y: f32) -> bool {

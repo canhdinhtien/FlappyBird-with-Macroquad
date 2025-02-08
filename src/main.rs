@@ -5,7 +5,7 @@
 
 use macroquad::{audio::*, prelude::*};
 
-const GRAVITY: f32 = 0.5;
+const GRAVITY: f32 = 0.0;
 const JUMP_STRENGTH: f32 = -8.5;
 const PIPE_WIDTH: f32 = 50.0;
 const PIPE_GAP: f32 = 150.0;
@@ -101,10 +101,10 @@ async fn main() {
                 }
                 
 
-                if bird_y < 0.0 || bird_y > screen_height() || pipes.iter().any(|(pipe_x, pipe_y)| bird_collides_with_pipe(bird_y, *pipe_x, *pipe_y)) {
-                    play_sound_once(crash_sound);
-                    state = GameState::GameOver;
-                }
+                // if bird_y < 0.0 || bird_y > screen_height() || pipes.iter().any(|(pipe_x, pipe_y)| bird_collides_with_pipe(bird_y, *pipe_x, *pipe_y)) {
+                //     play_sound_once(crash_sound);
+                //     state = GameState::GameOver;
+                // }
 
                 if (score/3)%2 == 0{ 
                     draw_texture_ex(
